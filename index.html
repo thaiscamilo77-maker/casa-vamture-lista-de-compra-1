@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casa Vamture - Lista de Compras Completa</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        purple: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                            950: '#2e1065',
+                        },
+                        slate: {
+                            850: '#131c2e',
+                            900: '#0f172a',
+                            950: '#090d16',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #5b21b6;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #7c3aed;
+        }
+        .purple-glow {
+            box-shadow: 0 0 25px -5px rgba(124, 58, 237, 0.25);
+        }
+        .card-glow {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="h-full text-slate-100 font-sans antialiased flex flex-col bg-slate-950 custom-scrollbar selection:bg-purple-600 selection:text-white">
+
+    <!-- Header/Navbar -->
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-purple-900/50 text-white sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-purple-900/60 rounded-xl border border-purple-500/30 purple-glow">
+                    <i data-lucide="home" class="w-7 h-7 text-purple-400"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                        Casa Vamture
+                        <span class="text-xs bg-purple-900/80 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-full font-medium">Dashboard</span>
+                    </h1>
+                    <p class="text-xs text-purple-300/70">Lista inteligente e controle de enxoval para a casa</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button id="btn-export-text" onclick="copyListToClipboard()" class="inline-flex items-center gap-2 bg-purple-950 hover:bg-purple-900 text-purple-200 font-medium px-4 py-2.5 rounded-xl text-sm transition-all border border-purple-600/40 hover:border-purple-500 active:scale-95 shadow-lg">
+                    <i data-lucide="copy" class="w-4 h-4 text-purple-400"></i>
+                    <span>Copiar Lista</span>
+                </button>
+                <button id="btn-add-item-modal" onclick="openAddItemModal()" class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-all shadow-lg purple-glow active:scale-95 border border-purple-400/30">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>Novo Item</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Banner & Progress Overview -->
+        <section class="bg-slate-900 rounded-2xl p-6 border border-purple-900/40 card-glow relative overflow-hidden">
+            <!-- Background Decorative Accent -->
+            <div class="absolute -right-16 -top-16 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-5">
+                <div>
+                    <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+                        <span>Seu checklist interativo</span>
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-1">Gerencie e monitore as quantidades necessárias e já compradas para o imóvel.</p>
+                </div>
+                
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div class="text-left md:text-right bg-slate-950/60 px-4 py-2 rounded-xl border border-purple-900/30">
+                        <span id="counter-text" class="text-3xl font-black text-purple-400 tracking-tight">0 de 0</span>
+                        <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">itens concluídos</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="mt-5 relative z-10">
+                <div class="flex justify-between items-center text-xs font-semibold text-slate-300 mb-2">
+                    <span class="flex items-center gap-1.5"><i data-lucide="line-chart" class="w-4 h-4 text-purple-400"></i> Progresso geral das aquisições</span>
+                    <span id="progress-percentage" class="text-purple-400 font-bold text-sm">0%</span>
+                </div>
+                <div class="w-full bg-slate-950 h-4 rounded-full overflow-hidden p-0.5 border border-purple-900/40">
+                    <div id="progress-bar" class="bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-400 h-full rounded-full transition-all duration-500 ease-out shadow-inner" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Quantity Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-6 pt-4 border-t border-slate-800/80 relative z-10">
+                <div class="bg-slate-950/70 border border-purple-900/30 p-4 rounded-xl flex items-center gap-3.5 hover:border-purple-600/40 transition-colors">
+                    <div class="p-3 bg-purple-950/80 text-purple-400 rounded-lg border border-purple-800/50">
+                        <i data-lucide="boxes" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 font-medium block">Total Necessário</span>
+                        <span id="total-qty-needed" class="text-xl font-extrabold text-white">0 un.</span>
+                    </div>
+                </div>
+                <div class="bg-slate-950/70 border border-emerald-900/30 p-4 rounded-xl flex items-center gap-3.5 hover:border-emerald-600/40 transition-colors">
+                    <div class="p-3 bg-emerald-950/80 text-emerald-400 rounded-lg border border-emerald-800/50">
+                        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 font-medium block">Total Adquirido</span>
+                        <span id="total-qty-bought" class="text-xl font-extrabold text-emerald-400">0 un.</span>
+                    </div>
+                </div>
+                <div class="bg-slate-950/70 border border-pink-900/30 p-4 rounded-xl flex items-center gap-3.5 hover:border-pink-600/40 transition-colors">
+                    <div class="p-3 bg-pink-950/80 text-pink-400 rounded-lg border border-pink-800/50">
+                        <i data-lucide="gift" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 font-medium block">Presentes Ganhos</span>
+                        <span id="total-gifts-count" class="text-xl font-extrabold text-pink-400">0 itens</span>
+                    </div>
+                </div>
+                <div class="bg-slate-950/70 border border-amber-900/30 p-4 rounded-xl flex items-center gap-3.5 hover:border-amber-600/40 transition-colors">
+                    <div class="p-3 bg-amber-950/80 text-amber-400 rounded-lg border border-amber-800/50">
+                        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 font-medium block">Falta Comprar</span>
+                        <span id="total-qty-remaining" class="text-xl font-extrabold text-amber-400">0 un.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Controls Toolbar (Search, Filter, Actions) -->
+        <section class="bg-slate-900 p-4 rounded-2xl border border-purple-900/40 card-glow space-y-3">
+            <div class="relative w-full">
+                <i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-purple-400"></i>
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    placeholder="Pesquisar item, doador (ex: Tia Maria, Mãe)..." 
+                    oninput="filterItems()"
+                    class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-purple-900/40 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-sm"
+                >
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                <!-- Room Collapse/Expand Controls -->
+                <div class="flex items-center gap-2">
+                    <button onclick="expandAllRooms()" class="px-3.5 py-2 bg-slate-950 hover:bg-purple-950/60 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition-all border border-purple-900/40 flex items-center gap-1.5 active:scale-95">
+                        <i data-lucide="chevrons-down" class="w-3.5 h-3.5 text-purple-400"></i>
+                        <span>Expandir cômodos</span>
+                    </button>
+                    <button onclick="collapseAllRooms()" class="px-3.5 py-2 bg-slate-950 hover:bg-purple-950/60 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition-all border border-purple-900/40 flex items-center gap-1.5 active:scale-95">
+                        <i data-lucide="chevrons-up" class="w-3.5 h-3.5 text-purple-400"></i>
+                        <span>Recolher cômodos</span>
+                    </button>
+                </div>
+
+                <!-- Priority / Status / Origin Filter -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 w-full sm:w-auto">
+                    <span class="text-xs font-medium text-slate-400 flex items-center gap-1">
+                        <i data-lucide="filter" class="w-3.5 h-3.5 text-purple-400"></i> Filtro:
+                    </span>
+                    <select id="status-filter" onchange="filterItems()" class="bg-slate-950 border border-purple-900/40 text-xs rounded-xl px-3 py-2 text-slate-200 font-medium focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none">
+                        <option value="all">Todos os itens</option>
+                        <option value="pending">Pendentes</option>
+                        <option value="completed">Comprados / Ganhos</option>
+                        <option value="gift">Apenas Presentes</option>
+                        <option value="self_buy">Nossa Compra</option>
+                        <option value="urgent">Urgente</option>
+                        <option value="essential">Essencial</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Checklist Container (Rooms Accordion) -->
+        <section id="rooms-container" class="space-y-4">
+            <!-- Dynamic Room Accordions rendered via JS -->
+        </section>
+
+    </main>
+
+    <!-- Modal: Add Custom Item -->
+    <div id="add-item-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-500/30 transform transition-all relative">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-800">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-5 h-5 text-purple-400"></i>
+                    Adicionar Novo Item
+                </h3>
+                <button onclick="closeAddItemModal()" class="text-slate-400 hover:text-slate-200 p-1 rounded-lg transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="add-item-form" onsubmit="handleAddNewItem(event)" class="space-y-4 mt-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nome do Item *</label>
+                    <input type="text" id="new-item-name" required placeholder="Ex: Micro-ondas 30L" class="w-full px-3.5 py-2.5 bg-slate-950 border border-purple-900/40 rounded-xl text-sm text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Cômodo *</label>
+                        <select id="new-item-room" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-purple-900/40 rounded-xl text-sm text-white focus:ring-2 focus:ring-purple-500 outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Categoria</label>
+                        <select id="new-item-category" class="w-full px-3.5 py-2.5 bg-slate-950 border border-purple-900/40 rounded-xl text-sm text-white focus:ring-2 focus:ring-purple-500 outline-none">
+                            <option value="Móvel">Móvel</option>
+                            <option value="Eletrodoméstico">Eletrodoméstico</option>
+                            <option value="Eletroeletrônico">Eletroeletrônico</option>
+                            <option value="Utensílio">Utensílio</option>
+                            <option value="Decoração">Decoração</option>
+                            <option value="Iluminação">Iluminação</option>
+                            <option value="Cama, Mesa e Banho">Cama, Mesa e Banho</option>
+                            <option value="Geral">Geral</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Tipo de Compra</label>
+                        <select id="new-item-type" onchange="toggleGiftGiverInputModal(this.value)" class="w-full px-3.5 py-2.5 bg-slate-950 border border-purple-900/40 rounded-xl text-sm text-white focus:ring-2 focus:ring-purple-500 outline-none">
+                            <option value="buy">Nossa Compra</option>
+                            <option value="gift">Presente de alguém</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Quem vai dar / Parente</label>
+                        <input type="text" id="new-item-giver" placeholder="Ex: Tia Maria / Mãe" class="w-full px-3.5 py-2.5 bg-slate-950 border border-purple-900/40 rounded-xl text-sm text-white focus:ring-2 focus:ring-purple-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Prioridade</label>
+                        <select id="new-item-priority" class="w-full px-3.5 py-2.5 bg-slate-950 border border-purple-900/40 rounded-xl text-sm text-white focus:ring-2 focus:ring-purple-500 outline-none">
+                            <option value="Agora">Urgente</option>
+                            <option value="Essencial">Essencial</option>
+                            <option value="Depois" selected>Depois</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Qtd. Precisa</label>
+                        <input type="number" min="1" id="new-item-qty-needed" value="1" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-purple-900/40 rounded-xl text-sm text-white focus:ring-2 focus:ring-purple-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Qtd. Comprada</label>
+                        <input type="number" min="0" id="new-item-qty-bought" value="0" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-purple-900/40 rounded-xl text-sm text-white focus:ring-2 focus:ring-purple-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2 border-t border-slate-800">
+                    <button type="button" onclick="closeAddItemModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-xl text-xs transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl text-xs shadow-lg purple-glow transition-all">
+                        Salvar Item
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-purple-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 z-50 border border-purple-500/50 purple-glow">
+        <i data-lucide="check-circle" class="w-5 h-5 text-purple-300"></i>
+        <span id="toast-message" class="text-xs font-medium">Ação realizada com sucesso!</span>
+    </div>
+
+    <script>
+        // Initial Complete House Checklist Data with Gift properties
+        const defaultData = [
+            {
+                id: 'sala',
+                title: '1. Sala de Estar',
+                expanded: true,
+                items: [
+                    { id: 's1', name: 'Sofá', category: 'Móvel', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 's2', name: 'Painel para TV', category: 'Móvel', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 's3', name: 'Rack', category: 'Móvel', priority: 'Depois', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 's4', name: 'Televisão (Smart TV)', category: 'Eletroeletrônico', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 's5', name: 'Mesa de Centro / Apoio', category: 'Móvel', priority: 'Depois', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 's6', name: 'Tapete para Sala', category: 'Decoração', priority: 'Depois', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 's7', name: 'Cortina e Varão', category: 'Decoração', priority: 'Essencial', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 's8', name: 'Almofadas', category: 'Decoração', priority: 'Depois', qtyNeeded: 4, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 's9', name: 'Lustre / Luminária', category: 'Iluminação', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 's10', name: 'Quadros decorativos', category: 'Decoração', priority: 'Depois', qtyNeeded: 3, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 's11', name: 'Pufes ou Poltrona', category: 'Móvel', priority: 'Depois', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 's12', name: 'Roteador Wi-Fi', category: 'Eletroeletrônico', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 's13', name: 'Filtro de linha / Extensão', category: 'Geral', priority: 'Agora', qtyNeeded: 3, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 's14', name: 'Ar Condicionado / Ventilador', category: 'Eletrodoméstico', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' }
+                ]
+            },
+            {
+                id: 'cozinha',
+                title: '2. Cozinha e Sala de Jantar',
+                expanded: true,
+                items: [
+                    { id: 'c1', name: 'Geladeira / Refrigerador', category: 'Eletrodoméstico', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c2', name: 'Fogão ou Cooktop', category: 'Eletrodoméstico', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c3', name: 'Forno Elétrico ou a Gás', category: 'Eletrodoméstico', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c4', name: 'Micro-ondas', category: 'Eletrodoméstico', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c5', name: 'Cadeiras de Jantar', category: 'Móvel', priority: 'Essencial', qtyNeeded: 6, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c6', name: 'Mesa de Jantar', category: 'Móvel', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c7', name: 'Jogo de Panelas', category: 'Utensílio', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c8', name: 'Jogo de Talheres', category: 'Utensílio', priority: 'Agora', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c9', name: 'Pratos (Rasos e Fundos)', category: 'Utensílio', priority: 'Agora', qtyNeeded: 12, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c10', name: 'Copos e Taças', category: 'Utensílio', priority: 'Agora', qtyNeeded: 12, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c11', name: 'Liquidificador', category: 'Eletrodoméstico', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c12', name: 'Air Fryer', category: 'Eletrodoméstico', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c13', name: 'Cafeteira', category: 'Eletrodoméstico', priority: 'Depois', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c14', name: 'Sanduicheira / Grill', category: 'Eletrodoméstico', priority: 'Depois', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c15', name: 'Lixeira para Cozinha', category: 'Utensílio', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c16', name: 'Escorredor de Louças', category: 'Utensílio', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c17', name: 'Potes de Mantimentos e Plásticos', category: 'Utensílio', priority: 'Essencial', qtyNeeded: 10, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c18', name: 'Tábuas de Carne e Facas', category: 'Utensílio', priority: 'Agora', qtyNeeded: 3, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'c19', name: 'Filtro / Purificador de Água', category: 'Eletrodoméstico', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' }
+                ]
+            },
+            {
+                id: 'quarto_principal',
+                title: '3. Quarto Principal (Casal)',
+                expanded: true,
+                items: [
+                    { id: 'q1', name: 'Cama Box / Colchão Queen', category: 'Móvel', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'q2', name: 'Guarda-roupa / Closet', category: 'Móvel', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'q3', name: 'Mesas de Cabeceira', category: 'Móvel', priority: 'Depois', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'q4', name: 'Travesseiros', category: 'Cama, Mesa e Banho', priority: 'Agora', qtyNeeded: 4, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'q5', name: 'Jogo de Cama / Lençóis', category: 'Cama, Mesa e Banho', priority: 'Agora', qtyNeeded: 3, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'q6', name: 'Edredom / Coberdrom', category: 'Cama, Mesa e Banho', priority: 'Essencial', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'q7', name: 'Cortina / Blackout', category: 'Decoração', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'q8', name: 'Espelho de Corpo Inteiro', category: 'Decoração', priority: 'Depois', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'q9', name: 'Cabides (Kits)', category: 'Geral', priority: 'Agora', qtyNeeded: 5, qtyBought: 0, bought: false, isGift: false, giver: '' }
+                ]
+            },
+            {
+                id: 'banheiro',
+                title: '4. Banheiro(s)',
+                expanded: true,
+                items: [
+                    { id: 'b1', name: 'Chuveiro Elétrico', category: 'Eletrodoméstico', priority: 'Agora', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'b2', name: 'Gabinete / Armário de Banheiro', category: 'Móvel', priority: 'Essencial', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'b3', name: 'Espelho de Banheiro', category: 'Decoração', priority: 'Essencial', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'b4', name: 'Jogos de Toalha de Banho e Rosto', category: 'Cama, Mesa e Banho', priority: 'Agora', qtyNeeded: 4, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'b5', name: 'Porta-toalhas e Porta-papel Higiênico', category: 'Utensílio', priority: 'Agora', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'b6', name: 'Tapetes de Banheiro', category: 'Cama, Mesa e Banho', priority: 'Agora', qtyNeeded: 3, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'b7', name: 'Lixeira de Banheiro com Pedal', category: 'Utensílio', priority: 'Agora', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'b8', name: 'Escova sanitária', category: 'Utensílio', priority: 'Agora', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'b9', name: 'Organizador para Box (Shampoo/Sabonete)', category: 'Utensílio', priority: 'Agora', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' }
+                ]
+            },
+            {
+                id: 'lavanderia',
+                title: '5. Lavanderia e Área de Serviço',
+                expanded: true,
+                items: [
+                    { id: 'l1', name: 'Máquina de Lavar Roupa / Lava e Seca', category: 'Eletrodoméstico', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'l2', name: 'Varal de Teto ou Chão', category: 'Utensílio', priority: 'Agora', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'l3', name: 'Tábua de Passar Roupa', category: 'Utensílio', priority: 'Depois', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'l4', name: 'Ferro ou Vaporizador', category: 'Eletrodoméstico', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'l5', name: 'Aspirador de Pó', category: 'Eletrodoméstico', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'l6', name: 'Vassoura, Rodo e Pá de Lixo', category: 'Utensílio', priority: 'Agora', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'l7', name: 'Baldes e Bacias', category: 'Utensílio', priority: 'Agora', qtyNeeded: 3, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'l8', name: 'MOP / Esfregão', category: 'Utensílio', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'l9', name: 'Cesto de Roupas Sujas', category: 'Utensílio', priority: 'Agora', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'l10', name: 'Armário Multiuso / Prateleiras', category: 'Móvel', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' }
+                ]
+            },
+            {
+                id: 'outros',
+                title: '6. Iluminação, Ferramentas e Diversos',
+                expanded: true,
+                items: [
+                    { id: 'o1', name: 'Lâmpadas LED (Kits)', category: 'Iluminação', priority: 'Agora', qtyNeeded: 15, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'o2', name: 'Jogo de Ferramentas Básico', category: 'Geral', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'o3', name: 'Escada Dobrável', category: 'Geral', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'o4', name: 'Capacho para Entrada da Casa', category: 'Decoração', priority: 'Essencial', qtyNeeded: 2, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'o5', name: 'Fechadura Eletrônica / Trava', category: 'Geral', priority: 'Depois', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' }
+                ]
+            },
+            {
+                id: 'churrasco_quintal',
+                title: '7. Quintal e Área de Churrasco',
+                expanded: true,
+                items: [
+                    { id: 'ch1', name: 'Churrasqueira (Grelha / Parrilla)', category: 'Utensílio', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'ch2', name: 'Kit de Utensílios para Churrasco', category: 'Utensílio', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'ch3', name: 'Cadeiras / Bancos para Área Externa', category: 'Móvel', priority: 'Essencial', qtyNeeded: 6, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'ch4', name: 'Mesa Externa', category: 'Móvel', priority: 'Essencial', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'ch5', name: 'Tábua de Corte Grande', category: 'Utensílio', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'ch6', name: 'Cooler / Caixa Térmica', category: 'Eletrodoméstico', priority: 'Depois', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'ch7', name: 'Ombrelone / Guarda-Sol', category: 'Decoração', priority: 'Depois', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'ch8', name: 'Arandelas / Luminárias Solares', category: 'Iluminação', priority: 'Essencial', qtyNeeded: 4, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'ch9', name: 'Mangueira de Jardim com Esguicho', category: 'Geral', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' },
+                    { id: 'ch10', name: 'Vassoura de Piaçava Externa', category: 'Utensílio', priority: 'Agora', qtyNeeded: 1, qtyBought: 0, bought: false, isGift: false, giver: '' }
+                ]
+            }
+        ];
+
+        // Global State
+        let houseData = [];
+
+        // Initialize App
+        function initApp() {
+            const saved = localStorage.getItem('casa_vamture_list_dark_v2');
+            if (saved) {
+                try {
+                    houseData = JSON.parse(saved);
+                } catch (e) {
+                    houseData = JSON.parse(JSON.stringify(defaultData));
+                }
+            } else {
+                houseData = JSON.parse(JSON.stringify(defaultData));
+            }
+
+            renderDashboard();
+            lucide.createIcons();
+        }
+
+        function saveData() {
+            localStorage.setItem('casa_vamture_list_dark_v2', JSON.stringify(houseData));
+            updateMetrics();
+        }
+
+        function renderDashboard() {
+            const container = document.getElementById('rooms-container');
+            container.innerHTML = '';
+
+            const searchTerm = document.getElementById('search-input')?.value.toLowerCase() || '';
+            const statusFilter = document.getElementById('status-filter')?.value || 'all';
+
+            houseData.forEach(room => {
+                room.items.forEach(item => {
+                    if (item.qtyNeeded === undefined) item.qtyNeeded = 1;
+                    if (item.qtyBought === undefined) item.qtyBought = item.bought ? item.qtyNeeded : 0;
+                    if (item.isGift === undefined) item.isGift = false;
+                    if (item.giver === undefined) item.giver = '';
+                    item.bought = item.qtyBought >= item.qtyNeeded && item.qtyNeeded > 0;
+                });
+
+                const filteredItems = room.items.filter(item => {
+                    const matchesSearch = item.name.toLowerCase().includes(searchTerm) || 
+                                          (item.category && item.category.toLowerCase().includes(searchTerm)) ||
+                                          (item.giver && item.giver.toLowerCase().includes(searchTerm));
+                    
+                    let matchesStatus = true;
+                    if (statusFilter === 'pending') matchesStatus = !item.bought;
+                    else if (statusFilter === 'completed') matchesStatus = item.bought;
+                    else if (statusFilter === 'gift') matchesStatus = item.isGift;
+                    else if (statusFilter === 'self_buy') matchesStatus = !item.isGift;
+                    else if (statusFilter === 'urgent') matchesStatus = item.priority === 'Agora';
+                    else if (statusFilter === 'essential') matchesStatus = item.priority === 'Essencial';
+
+                    return matchesSearch && matchesStatus;
+                });
+
+                const roomCompletedCount = room.items.filter(i => i.bought).length;
+                const roomTotalCount = room.items.length;
+
+                if (searchTerm !== '' && filteredItems.length === 0) {
+                    return;
+                }
+
+                // Render Dark Room Card
+                const roomCard = document.createElement('div');
+                roomCard.className = 'bg-slate-900 rounded-2xl border border-purple-900/40 card-glow overflow-hidden transition-all';
+                
+                // Room Header
+                roomCard.innerHTML = `
+                    <div onclick="toggleRoomCollapse('${room.id}')" class="p-4 bg-slate-900/90 hover:bg-slate-850 border-b border-slate-800 flex justify-between items-center cursor-pointer transition-colors select-none">
+                        <div>
+                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                <span>${room.title}</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 font-medium mt-0.5">${roomCompletedCount} de ${roomTotalCount} itens concluídos</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs px-2.5 py-1 rounded-full font-semibold ${roomCompletedCount === roomTotalCount && roomTotalCount > 0 ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/50' : 'bg-purple-950 text-purple-300 border border-purple-800/50'}">
+                                ${roomTotalCount > 0 ? Math.round((roomCompletedCount / roomTotalCount) * 100) : 0}%
+                            </span>
+                            <button class="text-slate-400 hover:text-purple-300 p-1">
+                                <i data-lucide="${room.expanded ? 'chevron-up' : 'chevron-down'}" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Items Container -->
+                    <div class="${room.expanded ? 'block' : 'hidden'} p-4 space-y-3 divide-y divide-slate-800/70 bg-slate-950/40">
+                        ${filteredItems.length === 0 ? `
+                            <p class="text-xs text-slate-500 py-3 text-center italic">Nenhum item encontrado nesta seção.</p>
+                        ` : filteredItems.map(item => `
+                            <div class="pt-3 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group">
+                                <!-- Checkbox, Name and Details -->
+                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                                    <input 
+                                        type="checkbox" 
+                                        id="chk-${item.id}" 
+                                        ${item.bought ? 'checked' : ''} 
+                                        onchange="toggleItemBought('${room.id}', '${item.id}')"
+                                        class="mt-1 w-5 h-5 bg-slate-900 border-purple-900/60 rounded text-purple-600 focus:ring-purple-500 focus:ring-2 cursor-pointer transition-all"
+                                    >
+                                    <label for="chk-${item.id}" class="cursor-pointer flex-1">
+                                        <span class="text-sm font-semibold ${item.bought ? 'line-through text-slate-500 font-normal' : 'text-slate-100'}">
+                                            ${item.name}
+                                        </span>
+                                        <div class="flex flex-wrap items-center gap-2 mt-1">
+                                            <span class="text-[10px] text-slate-400 font-medium bg-slate-900 px-2 py-0.5 rounded-md border border-slate-800">
+                                                ${item.category || 'Geral'}
+                                            </span>
+                                            ${getPriorityBadge(item.priority)}
+                                            <span class="text-[10px] font-semibold text-purple-300 bg-purple-950/80 px-2 py-0.5 rounded-md border border-purple-800/50">
+                                                ${item.qtyBought} / ${item.qtyNeeded} comprados
+                                            </span>
+                                            ${item.isGift ? `
+                                                <span class="text-[10px] font-bold text-pink-300 bg-pink-950/80 px-2 py-0.5 rounded-md border border-pink-800/50 flex items-center gap-1">
+                                                    <i data-lucide="gift" class="w-3 h-3 text-pink-400"></i> ${item.giver ? 'Presente de: ' + item.giver : 'Presente'}
+                                                </span>
+                                            ` : ''}
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- Source, Priority, Quantities and Actions -->
+                                <div class="flex flex-wrap items-center gap-2 self-end sm:self-center">
+                                    
+                                    <!-- Gift / Buy Toggle & Giver Field -->
+                                    <div class="flex items-center gap-1 bg-slate-900 border border-slate-800 p-1 rounded-xl">
+                                        <select 
+                                            onchange="updateItemGiftStatus('${room.id}', '${item.id}', this.value)"
+                                            class="text-xs bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-slate-300 focus:ring-1 focus:ring-purple-500 outline-none"
+                                        >
+                                            <option value="buy" ${!item.isGift ? 'selected' : ''}>Nossa Compra</option>
+                                            <option value="gift" ${item.isGift ? 'selected' : ''}>🎁 Presente</option>
+                                        </select>
+                                        
+                                        <input 
+                                            type="text" 
+                                            placeholder="Quem dará?" 
+                                            value="${item.giver || ''}"
+                                            onchange="updateItemGiver('${room.id}', '${item.id}', this.value)"
+                                            class="w-24 text-xs bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-pink-300 placeholder-slate-600 focus:ring-1 focus:ring-purple-500 outline-none ${item.isGift ? 'block' : 'hidden'}"
+                                            title="Quem vai dar este presente"
+                                        >
+                                    </div>
+
+                                    <!-- Priority Selector -->
+                                    <select 
+                                        onchange="updateItemPriority('${room.id}', '${item.id}', this.value)"
+                                        class="text-xs bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-slate-300 focus:ring-1 focus:ring-purple-500 outline-none"
+                                    >
+                                        <option value="Agora" ${item.priority === 'Agora' ? 'selected' : ''}>Urgente</option>
+                                        <option value="Essencial" ${item.priority === 'Essencial' ? 'selected' : ''}>Essencial</option>
+                                        <option value="Depois" ${item.priority === 'Depois' ? 'selected' : ''}>Depois</option>
+                                    </select>
+
+                                    <!-- Quantity Controls -->
+                                    <div class="flex items-center gap-1 bg-slate-900 border border-slate-800 p-1.5 rounded-xl">
+                                        <div class="flex flex-col text-[9px] text-slate-400 font-semibold px-1">
+                                            <span>PRECISA</span>
+                                            <input 
+                                                type="number" 
+                                                min="1"
+                                                value="${item.qtyNeeded}" 
+                                                onchange="updateItemQtyNeeded('${room.id}', '${item.id}', this.value)"
+                                                class="w-12 text-xs font-bold text-white bg-slate-950 border border-slate-800 rounded px-1 text-center focus:ring-1 focus:ring-purple-500 outline-none"
+                                            >
+                                        </div>
+                                        <div class="flex flex-col text-[9px] text-purple-400 font-semibold px-1">
+                                            <span>COMPRADO</span>
+                                            <input 
+                                                type="number" 
+                                                min="0"
+                                                value="${item.qtyBought}" 
+                                                onchange="updateItemQtyBought('${room.id}', '${item.id}', this.value)"
+                                                class="w-12 text-xs font-extrabold text-purple-300 bg-purple-950/90 border border-purple-700/50 rounded px-1 text-center focus:ring-1 focus:ring-purple-500 outline-none"
+                                            >
+                                        </div>
+                                    </div>
+
+                                    <!-- Remove Item -->
+                                    <button onclick="removeItem('${room.id}', '${item.id}')" title="Excluir item" class="text-slate-500 hover:text-red-400 p-1.5 rounded-lg transition-colors">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                container.appendChild(roomCard);
+            });
+
+            updateMetrics();
+            lucide.createIcons();
+        }
+
+        function getPriorityBadge(priority) {
+            if (priority === 'Agora') {
+                return `<span class="text-[10px] font-bold text-red-400 bg-red-950/80 border border-red-800/50 px-2 py-0.5 rounded-md">Urgente</span>`;
+            } else if (priority === 'Essencial') {
+                return `<span class="text-[10px] font-bold text-amber-400 bg-amber-950/80 border border-amber-800/50 px-2 py-0.5 rounded-md">Essencial</span>`;
+            } else {
+                return `<span class="text-[10px] font-medium text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-md">Depois</span>`;
+            }
+        }
+
+        function toggleRoomCollapse(roomId) {
+            const room = houseData.find(r => r.id === roomId);
+            if (room) {
+                room.expanded = !room.expanded;
+                renderDashboard();
+            }
+        }
+
+        function expandAllRooms() {
+            houseData.forEach(r => r.expanded = true);
+            renderDashboard();
+        }
+
+        function collapseAllRooms() {
+            houseData.forEach(r => r.expanded = false);
+            renderDashboard();
+        }
+
+        function toggleItemBought(roomId, itemId) {
+            const room = houseData.find(r => r.id === roomId);
+            if (room) {
+                const item = room.items.find(i => i.id === itemId);
+                if (item) {
+                    item.bought = !item.bought;
+                    if (item.bought) {
+                        item.qtyBought = item.qtyNeeded;
+                    } else {
+                        item.qtyBought = 0;
+                    }
+                    saveData();
+                    renderDashboard();
+                }
+            }
+        }
+
+        function updateItemGiftStatus(roomId, itemId, statusValue) {
+            const room = houseData.find(r => r.id === roomId);
+            if (room) {
+                const item = room.items.find(i => i.id === itemId);
+                if (item) {
+                    item.isGift = (statusValue === 'gift');
+                    saveData();
+                    renderDashboard();
+                }
+            }
+        }
+
+        function updateItemGiver(roomId, itemId, giverName) {
+            const room = houseData.find(r => r.id === roomId);
+            if (room) {
+                const item = room.items.find(i => i.id === itemId);
+                if (item) {
+                    item.giver = giverName.trim();
+                    saveData();
+                }
+            }
+        }
+
+        function updateItemPriority(roomId, itemId, newPriority) {
+            const room = houseData.find(r => r.id === roomId);
+            if (room) {
+                const item = room.items.find(i => i.id === itemId);
+                if (item) {
+                    item.priority = newPriority;
+                    saveData();
+                }
+            }
+        }
+
+        function updateItemQtyNeeded(roomId, itemId, newQty) {
+            const room = houseData.find(r => r.id === roomId);
+            if (room) {
+                const item = room.items.find(i => i.id === itemId);
+                if (item) {
+                    item.qtyNeeded = Math.max(1, parseInt(newQty) || 1);
+                    item.bought = item.qtyBought >= item.qtyNeeded;
+                    saveData();
+                    renderDashboard();
+                }
+            }
+        }
+
+        function updateItemQtyBought(roomId, itemId, newQty) {
+            const room = houseData.find(r => r.id === roomId);
+            if (room) {
+                const item = room.items.find(i => i.id === itemId);
+                if (item) {
+                    item.qtyBought = Math.max(0, parseInt(newQty) || 0);
+                    item.bought = item.qtyBought >= item.qtyNeeded;
+                    saveData();
+                    renderDashboard();
+                }
+            }
+        }
+
+        function removeItem(roomId, itemId) {
+            const room = houseData.find(r => r.id === roomId);
+            if (room) {
+                room.items = room.items.filter(i => i.id !== itemId);
+                saveData();
+                renderDashboard();
+                showToast('Item removido com sucesso!');
+            }
+        }
+
+        function filterItems() {
+            renderDashboard();
+        }
+
+        function updateMetrics() {
+            let totalItems = 0;
+            let completedItems = 0;
+            let totalQtyNeeded = 0;
+            let totalQtyBought = 0;
+            let totalGifts = 0;
+
+            houseData.forEach(room => {
+                room.items.forEach(item => {
+                    totalItems++;
+                    const needed = item.qtyNeeded || 1;
+                    const boughtQty = Math.min(item.qtyBought || 0, needed);
+                    
+                    totalQtyNeeded += needed;
+                    totalQtyBought += boughtQty;
+
+                    if (item.isGift) {
+                        totalGifts++;
+                    }
+
+                    if (item.bought || (item.qtyBought >= item.qtyNeeded && item.qtyNeeded > 0)) {
+                        completedItems++;
+                    }
+                });
+            });
+
+            const remainingQty = Math.max(0, totalQtyNeeded - totalQtyBought);
+            const percentage = totalQtyNeeded > 0 ? Math.round((totalQtyBought / totalQtyNeeded) * 100) : 0;
+
+            // Update DOM Counter
+            document.getElementById('counter-text').innerText = `${completedItems} de ${totalItems}`;
+            document.getElementById('progress-percentage').innerText = `${percentage}%`;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+
+            // Update DOM Quantity & Gift Stats
+            document.getElementById('total-qty-needed').innerText = `${totalQtyNeeded} un.`;
+            document.getElementById('total-qty-bought').innerText = `${totalQtyBought} un.`;
+            document.getElementById('total-gifts-count').innerText = `${totalGifts} itens`;
+            document.getElementById('total-qty-remaining').innerText = `${remainingQty} un.`;
+        }
+
+        function openAddItemModal() {
+            const selectRoom = document.getElementById('new-item-room');
+            selectRoom.innerHTML = houseData.map(r => `<option value="${r.id}">${r.title}</option>`).join('');
+            document.getElementById('add-item-modal').classList.remove('hidden');
+        }
+
+        function closeAddItemModal() {
+            document.getElementById('add-item-modal').classList.add('hidden');
+            document.getElementById('add-item-form').reset();
+        }
+
+        function toggleGiftGiverInputModal(type) {
+            const giverInput = document.getElementById('new-item-giver');
+            if (type === 'gift') {
+                giverInput.focus();
+            }
+        }
+
+        function handleAddNewItem(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-item-name').value.trim();
+            const roomId = document.getElementById('new-item-room').value;
+            const category = document.getElementById('new-item-category').value;
+            const priority = document.getElementById('new-item-priority').value;
+            const itemType = document.getElementById('new-item-type').value;
+            const giver = document.getElementById('new-item-giver').value.trim();
+            const qtyNeeded = Math.max(1, parseInt(document.getElementById('new-item-qty-needed').value) || 1);
+            const qtyBought = Math.max(0, parseInt(document.getElementById('new-item-qty-bought').value) || 0);
+
+            if (!name) return;
+
+            const room = houseData.find(r => r.id === roomId);
+            if (room) {
+                const newItem = {
+                    id: 'custom_' + Date.now(),
+                    name: name,
+                    category: category,
+                    priority: priority,
+                    qtyNeeded: qtyNeeded,
+                    qtyBought: qtyBought,
+                    bought: qtyBought >= qtyNeeded,
+                    isGift: (itemType === 'gift'),
+                    giver: giver
+                };
+                room.items.push(newItem);
+                saveData();
+                renderDashboard();
+                closeAddItemModal();
+                showToast('Novo item adicionado com sucesso!');
+            }
+        }
+
+        // Export/Copy text with Gift Details
+        function copyListToClipboard() {
+            let exportText = `🏠 *CASA VAMTURE - LISTA DE COMPRAS*\n\n`;
+
+            houseData.forEach(room => {
+                const completedInRoom = room.items.filter(i => i.bought).length;
+                exportText += `*${room.title.toUpperCase()}* (${completedInRoom}/${room.items.length} concluídos)\n`;
+                room.items.forEach(item => {
+                    const status = item.bought ? '✅' : '🔳';
+                    const qtyStr = `[${item.qtyBought}/${item.qtyNeeded} un.]`;
+                    const giftStr = item.isGift ? ` (🎁 Presente${item.giver ? ': ' + item.giver : ''})` : '';
+                    exportText += `${status} ${item.name} ${qtyStr}${giftStr}\n`;
+                });
+                exportText += `\n`;
+            });
+
+            const textArea = document.createElement("textarea");
+            textArea.value = exportText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast('Lista copiada para a área de transferência!');
+            } catch (err) {
+                showToast('Erro ao copiar a lista.');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            initApp();
+        };
+    </script>
+</body>
+</html>
